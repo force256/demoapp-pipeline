@@ -17,9 +17,9 @@ pipeline {
           }
         }
 
-        stage('Windows tests') {
+        stage('Windows Tests') {
           steps {
-            echo ' Run Windows tests'
+            echo 'Run Windows tests'
           }
         }
 
@@ -29,24 +29,24 @@ pipeline {
     stage('Deploy Staging') {
       steps {
         echo 'Deploy to staging environment'
-        input 'Deploy to staging environment'
+        input 'Ok to deploy to production?'
       }
     }
 
     stage('Deploy Production') {
+      post {
+        always {
+          archiveArtifacts(artifacts: 'target/demoapp.jar', fingerprint: true)
+        }
+
+        failure {
+          emailext(subject: 'Demoapp build failure', to: 'ci-team@example.com', body: 'Build failure for demoapp Build ${env.JOB_NAME} ')
+        }
+
+      }
       steps {
         echo 'Deploy to Prod'
       }
-    }
-
-  }
-  post {
-    always {
-      archiveArtifacts(artifacts: 'target/demoapp.jar', fingerprint: true)
-    }
-
-    failure {
-      mail(to: 'ci-team@example.com', subject: "Failed Pipeline ${currentBuild.fullDisplayName}", body: " For details about the failure, see ${env.BUILD_URL}")
     }
 
   }
